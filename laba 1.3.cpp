@@ -1,112 +1,116 @@
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
+#include <ctime>
+#include <cstdlib>
 
-// Базовый класс Entity
 class Entity {
 protected:
     std::string name;
     int health;
-    int attackStrength;
+    int attack;
     int defense;
 
 public:
-    Entity(const std::string& name, int health, int attackStrength, int defense)
-        : name(name), health(health), attackStrength(attackStrength), defense(defense) {}
-
-    virtual void attack(Entity& target) = 0; // Виртуальный метод атаки
-    virtual void displayInfo() const = 0; // Виртуальный метод отображения информации
-    virtual void heal(int amount) {
-        health += amount; // Лечит на указанную величину
-        std::cout << name << " heals for " << amount << " health points. Current health: " << health << "\n";
+    Entity(const std::string& n, int h, int a, int d) : name(n), health(h), attack(a), defense(d) {}
+    
+    virtual void attackTarget(Entity& target) {
+        int damage = attack - target.defense;
+        if (damage > 0) {
+            target.health -= damage;
+            std::cout << name << " attacks " << target.name << " for " << damage << " damage!\n";
+        } else {
+            std::cout << name << " attacks " << target.name << ", but it has no effect!\n";
+        }
     }
-
-    virtual ~Entity() = default; // Виртуальный деструктор
+    
+    virtual void displayInfo() const {
+        std::cout << "Name: " << name << ", HP: " << health 
+                  << ", Attack: " << attack << ", Defense: " << defense << std::endl;
+    }
+    
+    virtual void heal(int amount) {
+        health += amount;
+        if (health > 100) health = 100;
+        std::cout << name << " healed for " << amount << " HP!\n";
+    }
+    
+    virtual ~Entity() {}
 };
 
-// Класс Character, наследующий от Entity
 class Character : public Entity {
 public:
-    Character(const std::string& name, int health, int attackStrength, int defense)
-        : Entity(name, health, attackStrength, defense) {}
-
-    void attack(Entity& target) override {
-        std::cout << name << " attacks " << target.getName() << " with a critical strike! Damage dealt: " << attackStrength * 2 << "\n";
-        target.takeDamage(attackStrength * 2);
-    }
-
-    void displayInfo() const override {
-        std::cout << "Character: " << name << ", Health: " << health << ", Attack: " << attackStrength << ", Defense: " << defense << "\n";
-    }
-
-    void takeDamage(int damage) {
-        int damageTaken = damage > defense ? damage - defense : 0;
-        health -= damageTaken;
-        std::cout << name << " takes " << damageTaken << " damage. Remaining health: " << health << "\n";
+    Character(const std::string& n, int h, int a, int d) : Entity(n, h, a, d) {}
+    
+    void attackTarget(Entity& target) override {
+        int damage = attack - target.defense;
+        if (damage > 0) {
+            if (rand() % 100 < 20) { // 20% chance for critical hit
+                damage *= 2;
+                std::cout << "Critical hit! ";
+            }
+            target.health -= damage;
+            std::cout << name << " attacks " << target.name << " for " << damage << " damage!\n";
+        } else {
+            std::cout << name << " attacks " << target.name << ", but it has no effect!\n";
+        }
     }
 };
 
-// Класс Monster, наследующий от Entity
 class Monster : public Entity {
 public:
-    Monster(const std::string& name, int health, int attackStrength, int defense)
-        : Entity(name, health, attackStrength, defense) {}
-
-    void attack(Entity& target) override {
-        std::cout << name << " attacks " << target.getName() << " with a monstrous roar! Damage dealt: " << attackStrength << "\n";
-        target.takeDamage(attackStrength);
-    }
-
-    void displayInfo() const override {
-        std::cout << "Monster: " << name << ", Health: " << health << ", Attack: " << attackStrength << ", Defense: " << defense << "\n";
-    }
-
-    void takeDamage(int damage) {
-        int damageTaken = damage > defense ? damage - defense : 0;
-        health -= damageTaken;
-        std::cout << name << " takes " << damageTaken << " damage. Remaining health: " << health << "\n";
+    Monster(const std::string& n, int h, int a, int d) : Entity(n, h, a, d) {}
+    
+    void attackTarget(Entity& target) override {
+        int damage = attack - target.defense;
+        if (damage > 0) {
+            if (rand() % 100 < 30) { // 30% chance for poison
+                damage += 5;
+                std::cout << "Poisonous attack! ";
+            }
+            target.health -= damage;
+            std::cout << name << " attacks " << target.name << " for " << damage << " damage!\n";
+        } else {
+            std::cout << name << " attacks " << target.name << ", but it has no effect!\n";
+        }
     }
 };
 
-// Класс Boss, наследующий от Monster
 class Boss : public Monster {
 public:
-    Boss(const std::string& name, int health, int attackStrength, int defense)
-        : Monster(name, health, attackStrength, defense) {}
-
-    void attack(Entity& target) override {
-        std::cout << name << " unleashes a fiery strike on " << target.getName() << "! Damage dealt: " << attackStrength * 3 << "\n";
-        target.takeDamage(attackStrength * 3);
-    }
-
-    void displayInfo() const override {
-        std::cout << "Boss: " << name << ", Health: " << health << ", Attack: " << attackStrength << ", Defense: " << defense << "\n";
+    Boss(const std::string& n, int h, int a, int d) : Monster(n, h, a, d) {}
+    
+    void attackTarget(Entity& target) override {
+        int damage = attack - target.defense;
+        if (damage > 0) {
+            if (rand() % 100 < 40) { // 40% chance for fire attack
+                damage += 10;
+                std::cout << "Fire attack! ";
+            }
+            target.health -= damage;
+            std::cout << name << " attacks " << target.name << " for " << damage << " damage!\n";
+        } else {
+            std::cout << name << " attacks " << target.name << ", but it has no effect!\n";
+        }
     }
 };
 
-// Основная функция
 int main() {
-    // Создание объектов Character, Monster и Boss
-    Character hero("Hero", 100, 25, 10);
+    srand(time(0));
+    
+    Character hero("Hero", 100, 20, 10);
     Monster goblin("Goblin", 50, 15, 5);
     Boss dragon("Dragon", 200, 30, 20);
-
-    // Массив указателей на Entity
-    std::vector<Entity*> entities = { &hero, &goblin, &dragon };
-
-    // Вывод информации и атака для каждого объекта
-    for (Entity* entity : entities) {
+    
+    std::vector<Entity*> entities = {&hero, &goblin, &dragon};
+    
+    for (auto entity : entities) {
         entity->displayInfo();
-        std::cout << "\n";
     }
-
-    // Демонстрация полиморфного поведения
-    hero.attack(goblin);
-    goblin.attack(hero);
-    dragon.attack(hero);
-
-    // Лечение персонажа
-    hero.heal(20);
-
+    
+    hero.attackTarget(goblin);
+    dragon.attackTarget(hero);
+    hero.heal(30);
+    
     return 0;
 }
