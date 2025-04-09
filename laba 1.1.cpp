@@ -3,77 +3,57 @@
 
 class Character {
 private:
-    std::string name;       // Имя персонажа
-    int health;             // Уровень здоровья
-    int attack;             // Уровень атаки
-    int defense;            // Уровень защиты
+    std::string name;
+    int health;
+    int attack;
+    int defense;
+    const int maxHealth = 100;
 
 public:
-    // Конструктор
-    Character(std::string n, int hp, int att, int def)
-        : name(n), health(hp), attack(att), defense(def) {}
+    Character(const std::string& n, int h, int a, int d)
+        : name(n), health(h), attack(a), defense(d) {}
 
-    // Метод для получения уровня здоровья
-    int getHealth() const {
-        return health;
-    }
+    int getHealth() const { return health; }
 
-    // Метод для отображения информации о персонаже
     void displayInfo() const {
-        std::cout << "Character: " << name << "\n"
-                  << "Health: " << health << "\n"
-                  << "Attack: " << attack << "\n"
-                  << "Defense: " << defense << "\n";
+        std::cout << "Name: " << name << ", HP: " << health 
+                  << ", Attack: " << attack << ", Defense: " << defense << std::endl;
     }
 
-    // Метод для атаки другого персонажа
-    void attackEnemy(Character &enemy) {
+    void attackEnemy(Character& enemy) {
         int damage = attack - enemy.defense;
         if (damage > 0) {
-            enemy.takeDamage(damage);
-            std::cout << name << " attacks " << enemy.name << " for " << damage << " damage!\n";
+            enemy.health -= damage;
+            std::cout << name << " attacks " << enemy.name << " for " << damage << " damage!" << std::endl;
         } else {
-            std::cout << name << "'s attack was too weak to damage " << enemy.name << "!\n";
+            std::cout << name << " attacks " << enemy.name << ", but it has no effect!" << std::endl;
         }
     }
 
-    // Метод для получения урона
-    void takeDamage(int amount) {
-        health -= amount;
-        if (health < 0) {
-            health = 0;
-        }
-    }
-
-    // Метод для лечения персонажа
+    // Добавленные методы
     void heal(int amount) {
-        health += amount;
-        if (health > 100) {
-            health = 100; // Максимальное здоровье
-        }
+        health = (health + amount > maxHealth) ? maxHealth : health + amount;
+        std::cout << name << " healed for " << amount << " HP!" << std::endl;
+    }
+
+    void takeDamage(int amount) {
+        health = (health - amount < 0) ? 0 : health - amount;
+        std::cout << name << " took " << amount << " damage!" << std::endl;
     }
 };
 
 int main() {
-    // Создаем двух персонажей
-    Character hero("Hero", 100, 20, 5);
-    Character monster("Monster", 80, 15, 10);
+    Character hero("Hero", 100, 20, 10);
+    Character monster("Goblin", 50, 15, 5);
 
-    // Отображаем информацию о персонажах
     hero.displayInfo();
     monster.displayInfo();
-
-    // Персонаж атакует монстра
+    
     hero.attackEnemy(monster);
-    std::cout << "Monster's health: " << monster.getHealth() << "\n";
-
-    // Монстр восстанавливает здоровье
-    monster.heal(10);
-    std::cout << "Monster's health after healing: " << monster.getHealth() << "\n";
-
-    // Монстр атакует героя
-    monster.attackEnemy(hero);
-    std::cout << "Hero's health: " << hero.getHealth() << "\n";
-
+    monster.displayInfo();
+    
+    monster.takeDamage(10);
+    hero.heal(20);
+    
     return 0;
 }
