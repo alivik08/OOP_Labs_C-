@@ -5,6 +5,7 @@
 #include <fstream>
 #include <algorithm>
 #include <exception>
+#include <locale.h>
 
 // Base User class with encapsulation
 class User {
@@ -323,6 +324,7 @@ public:
 };
 
 int main() {
+    setlocale (LC_ALL, "Russian");
     try {
         AccessControlSystem<User, Resource> system;
 
